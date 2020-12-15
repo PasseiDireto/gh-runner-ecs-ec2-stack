@@ -1,7 +1,4 @@
-on:
-  push:
-    branches:
-      - master
+on: [workflow_dispatch]
 name: Deploy CDK Stack
 jobs:
   deploy_stack:
