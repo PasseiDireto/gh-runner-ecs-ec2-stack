@@ -1,0 +1,25 @@
+on:
+  push:
+    branches:
+      - master
+name: Deploy CDK Stack
+jobs:
+  deploy_stack:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v2
+      - name: Setup Node
+        uses: actions/setup-node@v1
+        with:
+          node-version: '12'
+      - name: CDK Deploy
+        env:
+          AWS_ACCESS_KEY_ID: ${{ secrets.CDK_ACCESS_ID }}
+          AWS_SECRET_ACCESS_KEY: ${{ secrets.CDK_SECRET_KEY }}
+          AWS_DEFAULT_REGION: ${{ secrets.AWS_DEFAULT_REGION }}
+          AWS_DEFAULT_ACCOUNT: ${{ secrets.AWS_PROD_ACCOUNT_ID }}
+          ASG_SUBNETS: ${{ secrets.AWS_DEFAULT_PUBLIC_SUBNETS }}
+          ECS_CLUSTER_VPC: ${{ secrets.AWS_DEFAULT_VPC }}
+        run: |
+               npm i
+               npx cdk deploy --require-approval never --all

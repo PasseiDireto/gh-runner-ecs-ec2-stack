@@ -1,0 +1,29 @@
+{
+  "name": "gh-nodejs-runner",
+  "version": "0.0.1",
+  "description": "ECS Service of launch type FARGATE that will be used as Github self hosted runner",
+  "private": true,
+  "scripts": {
+    "cdk": "npx cdk"
+  },
+  "author": {
+    "name": "Passei Direto",
+    "url": "https://passeidireto.com",
+    "organization": true
+  },
+  "license": "Apache-2.0",
+  "devDependencies": {
+    "@types/node": "^8.10.38",
+    "typescript": "~3.7.2"
+  },
+  "dependencies": {
+    "@aws-cdk/aws-ec2": "*",
+    "@aws-cdk/aws-ecr": "*",
+    "@aws-cdk/aws-ecs": "*",
+    "@aws-cdk/aws-ecs-patterns": "*",
+    "@aws-cdk/aws-elasticloadbalancingv2": "*",
+    "@aws-cdk/core": "*",
+    "aws-cdk": "*",
+    "dotenv": "^8.2.0"
+  }
+}
