@@ -50,6 +50,8 @@ aws ecs put-cluster-capacity-providers \
 You should still manually update de ASG with `managedTerminationProtection` so you can also enable it on your CapacityProvider. This is useful because
 your cluster can protect instances with running tasks to be removed. ASG by default doesn't know/care about this, so you could end up with interrupted long running tasks.
 
+**Please note that** since only the base stack is handled by CDK, it is not safe to run updates: ASG changes will erase further modifications, such as the CapacityProvider link into the cluster and `managedTerminationProtection` changes. We intend to handle this better as soon as AWS publishes the missing CDK constructors. 
+
 ## Future plans:
 
 - [ ] have the cli/manual steps automated using [AWS JS SDK](https://aws.amazon.com/sdk-for-node-js/).
