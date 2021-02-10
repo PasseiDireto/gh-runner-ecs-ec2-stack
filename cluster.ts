@@ -33,7 +33,6 @@ export class ECSCluster extends Stack {
       taskDrainTime: Duration.minutes(1),
       cooldown: Duration.minutes(1),
       vpcSubnets,
-      keyName: "gh-runner",
       blockDevices:[{
         deviceName: "/dev/sda1",
         volume: BlockDeviceVolume.ebs(40)

@@ -8,6 +8,14 @@ This stack contains basically two components:
 1. ECS Cluster with an EC2 AutoScalingGroup.
 1. Task Definition with a [GitHub Self Hosted Runner](https://github.com/PasseiDireto/gh-runner).
 
+## Custom Sysbox AMI
+
+This stack uses a custom AMI to support [sysbox](https://github.com/nestybox/sysbox), so [gh-runner](https://github.com/PasseiDireto/gh-runner) can run without `privileged` mode and no [hacky](https://jpetazzo.github.io/2015/09/03/do-not-use-docker-in-docker-for-ci/) Docker in Docker approaches not suitable for production. Aditional steps (on `userData` at cluster definition) aim to configure and start the needed services. You can learn more about the custom AMI on AWS Console or using awscli:
+
+```shell script
+aws ec2 describe-images --filters "Name=name,Values=passeidireto-ecs-sysbox*"
+```
+
 ## Usage
 
 First, you will need the following environment variables in order to use this stack:
