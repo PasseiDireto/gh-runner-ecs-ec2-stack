@@ -1,7 +1,6 @@
-import {  ContainerImage, TaskDefinition, LogDriver, Compatibility, NetworkMode } from '@aws-cdk/aws-ecs';
+import {  ContainerImage, TaskDefinition, LogDriver, Compatibility } from '@aws-cdk/aws-ecs';
 import { Repository } from '@aws-cdk/aws-ecr';
-import { LogGroup, RetentionDays } from '@aws-cdk/aws-logs';
-import { App, StackProps, Stack, RemovalPolicy, Duration } from '@aws-cdk/core';
+import { App, StackProps, Stack, Duration } from '@aws-cdk/core';
 
 export class AutoScalingECSTask extends Stack {
 
@@ -16,7 +15,6 @@ export class AutoScalingECSTask extends Stack {
       cpu: "1024",
       memoryMiB: "2048",
       family: this.name,
-      networkMode: NetworkMode.HOST
     });
 
     taskDefinition.addContainer("runner", {
@@ -24,15 +22,8 @@ export class AutoScalingECSTask extends Stack {
       memoryReservationMiB: 2048,
       startTimeout: Duration.seconds(10),
       stopTimeout: Duration.seconds(30),
-      privileged: true,
       logging: LogDriver.awsLogs({
         streamPrefix: this.name,
-        multilinePattern: '^INFO|^WARNING|^ERROR',
-        logGroup: new LogGroup(this, `${this.name}-lg`, {
-          logGroupName: `${this.name}-logs`,
-          retention: RetentionDays.TWO_WEEKS,
-          removalPolicy: RemovalPolicy.DESTROY
-        })
       }),
     });
   }
