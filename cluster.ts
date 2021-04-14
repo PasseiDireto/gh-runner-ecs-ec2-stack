@@ -39,19 +39,21 @@ export class ECSCluster extends Stack {
       }]
     }); 
     asg.addUserData(
-      "sudo -s",
-      "/usr/local/sbin/sysbox",
-      "docker restart",
+      'sudo -s',
+      '/usr/local/sbin/sysbox',
+      'docker restart',
       `echo ECS_CLUSTER=${cluster.clusterName} | tee /etc/ecs/ecs.config`,
-      "echo ECS_DATADIR=/data | tee -a /etc/ecs/ecs.config",
-      "echo ECS_ENABLE_TASK_IAM_ROLE=true | tee -a /etc/ecs/ecs.config",
-      "echo ENABLE_TASK_IAM_ROLE_NETWORK_HOST=true | tee -a /etc/ecs/ecs.config",
-      "echo ECS_LOGFILE=/log/ecs-agent.log | tee -a /etc/ecs/ecs.config",
-      "echo ECS_AVAILABLE_LOGGING_DRIVERS=[\"json-file\",\"awslogs\"] | tee -a /etc/ecs/ecs.config",
-      "echo ECS_LOGLEVEL=info | tee -a /etc/ecs/ecs.config",
-      "curl -o ecs-agent.tar https://s3.us-east-2.amazonaws.com/amazon-ecs-agent-us-east-2/ecs-agent-latest.tar",
-      "docker load --input ./ecs-agent.tar",
-      "docker run --name ecs-agent --privileged --detach=true --restart=on-failure:10 --volume=/var/run:/var/run --volume=/var/log/ecs/:/log:Z --volume=/var/lib/ecs/data:/data:Z --volume=/etc/ecs:/etc/ecs --net=host --userns=host --runtime=runc --env-file=/etc/ecs/ecs.config amazon/amazon-ecs-agent:latest"
+      'echo ECS_LOGFILE=/log/ecs-agent.log | tee -a /etc/ecs/ecs.config',
+      'echo ECS_AVAILABLE_LOGGING_DRIVERS=[\\"json-file\\",\\"syslog\\",\\"awslogs\\",\\"fluentd\\",\\"none\\"] | tee -a /etc/ecs/ecs.config',
+      'echo ECS_ENABLE_AWSLOGS_EXECUTIONROLE_OVERRIDE=true | tee -a /etc/ecs/ecs.config',
+      'echo ECS_ENABLE_TASK_IAM_ROLE=true | tee -a /etc/ecs/ecs.config',
+      'echo ECS_ENABLE_TASK_IAM_ROLE_NETWORK_HOST=true | tee -a /etc/ecs/ecs.config',
+      'echo ECS_DATADIR=/data | tee -a /etc/ecs/ecs.config',
+      'echo ECS_AWSVPC_BLOCK_IMDS=true | tee -a /etc/ecs/ecs.config',
+      'echo ECS_ENABLE_TASK_ENI=true | tee -a /etc/ecs/ecs.config',
+      'curl -o ecs-agent.tar https://s3.us-east-2.amazonaws.com/amazon-ecs-agent-us-east-2/ecs-agent-latest.tar',
+      'docker load --input ./ecs-agent.tar',
+      'docker run --name ecs-agent --privileged --detach=true --restart=on-failure:10 --volume=/var/run:/var/run --volume=/var/log/ecs/:/log:Z --volume=/var/lib/ecs/data:/data:Z --volume=/etc/ecs:/etc/ecs --net=host --userns=host --runtime=runc --env-file=/etc/ecs/ecs.config amazon/amazon-ecs-agent:latest'
       )
 
   }
