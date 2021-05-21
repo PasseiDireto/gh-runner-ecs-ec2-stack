@@ -12,19 +12,20 @@ export class ECSCluster extends Stack {
       vpcId: process.env.ECS_CLUSTER_VPC
     });
 
-    const subnets = Array()
-    process.env.ASG_SUBNETS?.split(",").forEach(subnetId => {
-      // https://github.com/aws/aws-cdk/issues/8301
-      const s = Subnet.fromSubnetAttributes(this, subnetId, {subnetId, availabilityZone: "dummy"})
-      subnets.push(s)    
-    });
-    const vpcSubnets = vpc.selectSubnets({subnets})
+    const subnetIds = process.env.ASG_SUBNETS;
+    const vcpSubnets = [...vpc.publicSubnets, ...vpc.privateSubnets, ...vpc.isolatedSubnets];
+    const subnets = (subnetIds?.split(',') || [])
+        .map((subnetId) => vcpSubnets.find((subnet) => subnet.subnetId === subnetId))
+        .filter(Boolean) as Subnet[];
+
     const cluster = new Cluster(this, 'gh-runner', {
       clusterName: 'gh-runner',
       vpc,
       containerInsights: true
      });
-    const ami = new LookupMachineImage( {name: "passeidireto-ecs-sysbox*"})
+
+    const ami = new LookupMachineImage( { name: 'passeidireto-ecs-sysbox*' });
+
     const asg = cluster.addCapacity('gh-runner-automanaged', {
       instanceType: InstanceType.of(InstanceClass.T2, InstanceSize.XLARGE),
       machineImage: ami,
@@ -32,12 +33,15 @@ export class ECSCluster extends Stack {
       maxCapacity: 6,
       taskDrainTime: Duration.minutes(1),
       cooldown: Duration.minutes(1),
-      vpcSubnets,
+      vpcSubnets: {
+        subnets,
+      },
       blockDevices:[{
         deviceName: "/dev/sda1",
         volume: BlockDeviceVolume.ebs(40)
       }]
-    }); 
+    });
+
     asg.addUserData(
       'sudo -s',
       '/usr/local/sbin/sysbox',
@@ -54,8 +58,7 @@ export class ECSCluster extends Stack {
       'curl -o ecs-agent.tar https://s3.us-east-2.amazonaws.com/amazon-ecs-agent-us-east-2/ecs-agent-latest.tar',
       'docker load --input ./ecs-agent.tar',
       'docker run --name ecs-agent --privileged --detach=true --restart=on-failure:10 --volume=/var/run:/var/run --volume=/var/log/ecs/:/log:Z --volume=/var/lib/ecs/data:/data:Z --volume=/etc/ecs:/etc/ecs --net=host --userns=host --runtime=runc --env-file=/etc/ecs/ecs.config amazon/amazon-ecs-agent:latest'
-      )
-
+      );
   }
 }
 
