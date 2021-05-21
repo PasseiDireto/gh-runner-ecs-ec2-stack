@@ -7,14 +7,14 @@ dotenv.config();
 const app = new App();
 
 const env = {
-  account: process.env.AWS_DEFAULT_ACCOUNT,
-  region:process.env.AWS_DEFAULT_REGION
-}
+  account: process.env.AWS_DEFAULT_ACCOUNT || process.env.CDK_DEFAULT_ACCOUNT,
+  region: process.env.AWS_DEFAULT_REGION || process.env.CDK_DEFAULT_REGION,
+};
 
-new ECSCluster(app, "gh-runner-ecs-cluster", {
+new ECSCluster(app, 'gh-runner-ecs-cluster', {
   env
 });
 
-new AutoScalingECSTask(app, "gh-runner-task", {
+new AutoScalingECSTask(app, 'gh-runner-task', {
    env
 });
