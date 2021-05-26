@@ -31,22 +31,11 @@ With the environment variables all set, you can just run this stack with:
 npx cdk deploy --all --require-approval never
 ```
 
-As of now, you need to add the capacityProvider in the fresh cluster via console or aws CLI. AWS does not support CDK Capacity Provider for now:
+## Attach capacityProvider to your cluster
 
-- https://github.com/aws/aws-cdk/issues/5471
-- https://aws.amazon.com/pt/blogs/containers/deep-dive-on-amazon-ecs-cluster-auto-scaling/
-- https://ecsworkshop.com/capacity_providers/
+As of now, you need to configure the default [capacityProvider](https://aws.amazon.com/pt/blogs/containers/deep-dive-on-amazon-ecs-cluster-auto-scaling/) via console or aws CLI. AWS does not support CDK Capacity Provider for now.
 
 So you will need to execute the following steps via [AWS CLI](https://docs.aws.amazon.com/pt_br/cli/latest/userguide/install-cliv2.html).
-
-## Creating capacity provider
-```sh
-    aws ecs create-capacity-provider \
-        --name $capacity_provider_name \
-        --auto-scaling-group-provider autoScalingGroupArn="$asg_arn",managedScaling=\{status="ENABLED",targetCapacity=100\},managedTerminationProtection="DISABLED" \
-        --region $AWS_REGION
-```
-## Attach it your cluster
 
 ```sh
 aws ecs put-cluster-capacity-providers \
@@ -55,11 +44,4 @@ aws ecs put-cluster-capacity-providers \
     --default-capacity-provider-strategy capacityProvider=default,weight=1,base=1
 ```
 
-You should still manually update de ASG with `managedTerminationProtection` so you can also enable it on your CapacityProvider. This is useful because
-your cluster can protect instances with running tasks to be removed. ASG by default doesn't know/care about this, so you could end up with interrupted long running tasks.
-
-**Please note that** since only the base stack is handled by CDK, it is not safe to run updates: ASG changes will erase further modifications, such as the CapacityProvider link into the cluster and `managedTerminationProtection` changes. We intend to handle this better as soon as AWS publishes the missing CDK constructors. 
-
-## Future plans:
-
-- [ ] have the cli/manual steps automated using [AWS JS SDK](https://aws.amazon.com/sdk-for-node-js/).
+**Please note that** since only the base stack is handled by CDK, it is not safe to run updates: ASG changes will erase further modifications, such as the CapacityProvider link into the cluster. We intend to handle this better as soon as AWS publishes the missing CDK constructors. 
