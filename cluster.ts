@@ -1,8 +1,7 @@
-import {  Cluster } from '@aws-cdk/aws-ecs';
-import {  BlockDeviceVolume } from '@aws-cdk/aws-autoscaling';
-import {  Vpc, InstanceType, InstanceClass, InstanceSize, Subnet, LookupMachineImage} from '@aws-cdk/aws-ec2';
-import {  App, Stack, StackProps, Duration } from '@aws-cdk/core';
-
+import { Cluster, AsgCapacityProvider } from '@aws-cdk/aws-ecs';
+import { AutoScalingGroup, BlockDeviceVolume, UpdatePolicy, Monitoring } from '@aws-cdk/aws-autoscaling';
+import { Vpc, InstanceType, Subnet, LookupMachineImage } from '@aws-cdk/aws-ec2';
+import { App, Stack, StackProps, Duration } from '@aws-cdk/core';
 
 export class ECSCluster extends Stack {
   constructor(scope: App, id: string, props?: StackProps) {
@@ -26,20 +25,27 @@ export class ECSCluster extends Stack {
 
     const ami = new LookupMachineImage( { name: 'passeidireto-ecs-sysbox*' });
 
-    const asg = cluster.addCapacity('gh-runner-automanaged', {
-      instanceType: InstanceType.of(InstanceClass.T2, InstanceSize.XLARGE),
+    const asg: AutoScalingGroup = new AutoScalingGroup(this, 'Asg', {
+      vpc,
+      autoScalingGroupName: 'gh-runner-automanaged',
+      instanceType: new InstanceType('t3.xlarge'),
       machineImage: ami,
       minCapacity: 0,
       maxCapacity: 6,
-      taskDrainTime: Duration.minutes(1),
-      cooldown: Duration.minutes(1),
+      cooldown: Duration.seconds(60),
+      blockDevices: [{
+        deviceName: '/dev/xvda',
+        volume: BlockDeviceVolume.ebs(200),
+      }],
       vpcSubnets: {
         subnets,
       },
-      blockDevices:[{
-        deviceName: "/dev/sda1",
-        volume: BlockDeviceVolume.ebs(40)
-      }]
+      newInstancesProtectedFromScaleIn: true,
+      maxInstanceLifetime: Duration.days(7),
+      updatePolicy: UpdatePolicy.replacingUpdate(),
+      instanceMonitoring: Monitoring.DETAILED,
+      // https://github.com/aws/aws-cdk/issues/11581
+      updateType: undefined,
     });
 
     asg.addUserData(
@@ -58,7 +64,17 @@ export class ECSCluster extends Stack {
       'curl -o ecs-agent.tar https://s3.us-east-2.amazonaws.com/amazon-ecs-agent-us-east-2/ecs-agent-latest.tar',
       'docker load --input ./ecs-agent.tar',
       'docker run --name ecs-agent --privileged --detach=true --restart=on-failure:10 --volume=/var/run:/var/run --volume=/var/log/ecs/:/log:Z --volume=/var/lib/ecs/data:/data:Z --volume=/etc/ecs:/etc/ecs --net=host --userns=host --runtime=runc --env-file=/etc/ecs/ecs.config amazon/amazon-ecs-agent:latest'
-      );
+    );
+
+    const capacityProvider = new AsgCapacityProvider(this, 'AsgCapacityProvider', {
+      autoScalingGroup: asg,
+      enableManagedScaling: true,
+      enableManagedTerminationProtection: true,
+      targetCapacityPercent: 100,
+      capacityProviderName: asg.autoScalingGroupName,
+    });
+
+    cluster.addAsgCapacityProvider(capacityProvider);
   }
 }
 

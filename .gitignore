@@ -3,3 +3,4 @@ package-lock.json
 cdk.out
 cdk.context.json
 .env*
+.idea/
