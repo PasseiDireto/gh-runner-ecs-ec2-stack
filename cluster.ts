@@ -35,7 +35,7 @@ export class ECSCluster extends Stack {
       cooldown: Duration.seconds(60),
       blockDevices: [{
         deviceName: '/dev/xvda',
-        volume: BlockDeviceVolume.ebs(40),
+        volume: BlockDeviceVolume.ebs(200),
       }],
       vpcSubnets: {
         subnets,
