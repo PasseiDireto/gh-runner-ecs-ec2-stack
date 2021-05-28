@@ -26,8 +26,8 @@ export class ECSCluster extends Stack {
     const ami = new LookupMachineImage( { name: 'passeidireto-ecs-sysbox*' });
 
     const asg: AutoScalingGroup = new AutoScalingGroup(this, 'Asg', {
-      vpc,
       autoScalingGroupName: 'gh-runner-automanaged',
+      vpc,
       instanceType: new InstanceType('t3.xlarge'),
       machineImage: ami,
       minCapacity: 0,
@@ -60,7 +60,6 @@ export class ECSCluster extends Stack {
       'echo ECS_ENABLE_TASK_IAM_ROLE_NETWORK_HOST=true | tee -a /etc/ecs/ecs.config',
       'echo ECS_DATADIR=/data | tee -a /etc/ecs/ecs.config',
       'echo ECS_AWSVPC_BLOCK_IMDS=true | tee -a /etc/ecs/ecs.config',
-      'echo ECS_ENABLE_TASK_ENI=true | tee -a /etc/ecs/ecs.config',
       'curl -o ecs-agent.tar https://s3.us-east-2.amazonaws.com/amazon-ecs-agent-us-east-2/ecs-agent-latest.tar',
       'docker load --input ./ecs-agent.tar',
       'docker run --name ecs-agent --privileged --detach=true --restart=on-failure:10 --volume=/var/run:/var/run --volume=/var/log/ecs/:/log:Z --volume=/var/lib/ecs/data:/data:Z --volume=/etc/ecs:/etc/ecs --net=host --userns=host --runtime=runc --env-file=/etc/ecs/ecs.config amazon/amazon-ecs-agent:latest'

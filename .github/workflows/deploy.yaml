@@ -1,9 +1,4 @@
-on: 
-  workflow_dispatch:
-  push:
-    branches:
-      - main
-      - master
+on:  [workflow_dispatch]
 name: Deploy CDK Stack
 jobs:
   deploy_stack:
@@ -24,4 +19,5 @@ jobs:
           ECS_CLUSTER_VPC: ${{ secrets.AWS_DEFAULT_VPC }}
         run: |
                npm i
+               npx cdk destroy --require-approval never --all
                npx cdk deploy --require-approval never --all
