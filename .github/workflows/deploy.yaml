@@ -1,9 +1,9 @@
 on: 
-  - workflow_dispatch:
-  - push:
-      branches:
-        - main
-        - master
+  workflow_dispatch:
+  push:
+    branches:
+      - main
+      - master
 name: Deploy CDK Stack
 jobs:
   deploy_stack:
