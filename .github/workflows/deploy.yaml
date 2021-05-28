@@ -1,4 +1,9 @@
-on: [workflow_dispatch]
+on: 
+  - workflow_dispatch:
+  - push:
+      branches:
+        - main
+        - master
 name: Deploy CDK Stack
 jobs:
   deploy_stack:
@@ -8,7 +13,7 @@ jobs:
       - name: Setup Node
         uses: actions/setup-node@v1
         with:
-          node-version: '12'
+          node-version: '14'
       - name: CDK Deploy
         env:
           AWS_ACCESS_KEY_ID: ${{ secrets.CDK_ACCESS_ID }}
