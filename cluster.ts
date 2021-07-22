@@ -28,6 +28,7 @@ export class ECSCluster extends Stack {
     const asg: AutoScalingGroup = new AutoScalingGroup(this, 'Asg', {
       autoScalingGroupName: 'gh-runner-automanaged',
       vpc,
+      keyName: 'passeidireto-ohio',
       instanceType: new InstanceType('t3.xlarge'),
       machineImage: ami,
       minCapacity: 0,
@@ -50,7 +51,7 @@ export class ECSCluster extends Stack {
 
     asg.addUserData(
       'sudo -s',
-      '/usr/local/sbin/sysbox',
+      '/usr/bin/sysbox',
       'docker restart',
       `echo ECS_CLUSTER=${cluster.clusterName} | tee /etc/ecs/ecs.config`,
       'echo ECS_LOGFILE=/log/ecs-agent.log | tee -a /etc/ecs/ecs.config',
